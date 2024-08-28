@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Bootstrap CSS y JS (Versión compatible) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/Static/wwwroot/scr/js/DbLocalStore.js"></script>
+    <!-- Bootstrap Datepicker CSS y JS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
+</head>
+<body onload="IgniteDb()">
+    <div class="d-flex justify-content-center align-items-center" style="height: 100vh;">
+        <div class="text-center p-3" style="width: 500px; height: 85%; background-color: lightgray;">
+            <form>
+                <div class="form-group">
+                    <div class="component">
+                        <label for="lblId" name="fecha_consulta">Identificador de Registro:</label>
+                        <input type="text" class="form-control" name="id_Registro" id="id_Registro" placeholder="Coloque un Id">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="component">
+                        <label for="datepicker" name="fecha_consulta">Fecha de Consulta:</label>
+                        <input type="text" class="form-control" name="fecha_consulta" id="datepicker" placeholder="MM/DD/YYYY">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="lbl" class="form-label">Nombre del paciente</label>
+                    <div class="component">
+                        <input type="text" class="form-control mb-2" id="Nombre_del_paciente" placeholder="Paciente">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="lbl" class="form-label">Procedimiento:</label>
+                    <div class="component">
+                        <input type="text" class="form-control mb-2" id="Procedimiento" placeholder="Procedimiento para el paciente">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="lbl" class="form-label">Finalidad de la Consulta:</label>
+                    <div class="component">
+                        <input type="text" class="form-control mb-2" id="Causa_Externa" placeholder="Finalidad de la Consulta">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="lbl" class="form-label">Causa Externa:</label>
+                    <div class="component">
+                        <input type="text" class="form-control mb-2" id="Causa_Externa" placeholder="Causas Externas">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="lbl" class="form-label">Diagnóstico Principal:</label>
+                    <div class="component">
+                        <input type="text" class="form-control mb-2" id="Diagnóstico_Principal" placeholder="Diagnostico del paciente">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="lbl" class="form-label">Valor de la Consulta:</label>
+                    <div class="component">
+                        <input type="text" class="form-control mb-2" id="Precio_Consulta" placeholder="Precio de la consulta">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="buttons">
+                        <table class="table table-bordered" id="containerbuttons">
+                            <thead>
+                                <tr>
+                                    <th><input type="button" class="btn btn-primary w-80" id="bttnActualizar" value="Actualizar Consulta"></th>
+                                    <th><input type="button" class="btn btn-primary w-80" id="bttnBuscar" value="Buscar Consulta"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th><input type="button" class="btn btn-primary w-80" id="bttnCrear" value="Crear Consulta"></th>
+                                    <th><input type="button" class="btn btn-primary w-80" id="bttnEliminar" value="Eliminar Consulta"></th>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+ 
+  
+
+<script>
+    let userDbInstance = null;
+    let identityInstance = null;
+    let identityCheckerInstance = null;
+    let DbLocalStoreInstance = null;
+     DbLocalStoreInstance = DbLocalStore.getInstance("dbLocalStore");    
+    function IgniteDb() {
+      // Definir las URLs usando Flask dentro de la plantilla
+      var loginUrl = "/templates/Login/indexLGN.html";
+      var dashboardUrl = "/templates/Dashboard/indexDS.html";
+      var policyURL = "/templates/Policy/index.html";  
+      window.appConfig = {
+        loginUrl: loginUrl,
+        dashboardUrl: dashboardUrl,
+      };
+      // Imprimir las URLs para verificar
+      console.log("Login URL:", loginUrl);
+      console.log("Dashboard URL:", dashboardUrl);
+      const user = JSON.parse(sessionStorage.getItem("UserNameAuthenticated"));
+
+      // Verificar si el usuario está autenticado
+      if (user && user.Identidad === "true") {
+        // Verificar si el usuario tiene el rol de "Admin"
+        if (user.Rol === "Admin") {
+          // Si el usuario tiene el rol adecuado, ocultar la pantalla de carga y mostrar el contenido
+          document.getElementById("loadingScreen").style.display = "none";
+          document.getElementById("mainContent").style.display = "block";
+
+          // Crear una instancia Singleton y hacerla accesible globalmente
+          userDbInstance = UserDbStore.getInstance("userDbStore");
+
+          // Crear una instancia de Identity usando la instancia de UserDbStore
+          identityInstance = Identity.getInstance(userDbInstance);
+          DbLocalStoreInstance = DbLocalStore.getInstance("dbLocalStore");    
+          // Iniciar IdentityChecker
+          startIdentityChecker();
+        } else {
+          alert("No tiene los privilegios necesarios para acceder a esta página. Cerrando sesión y redirigiendo al Login...");
+
+
+          window.location.href = window.appConfig.loginUrl;
+        }
+      } else {
+        alert("No está autenticado. Favor de autenticarse, gracias...");
+        window.location.href = window.appConfig.loginUrl;
+      }
+    }
+
+    function startIdentityChecker() {
+      // Crear la instancia Singleton de IdentityChecker
+      identityCheckerInstance = IdentityChecker.getInstance(identityInstance);    
+      identityCheckerInstance.startChecking();
+    }
+    
+    // Datepicker (Fechas)
+    $(document).ready(function(){
+        $('#datepicker').datepicker({
+            format: 'mm/dd/yyyy',
+            autoclose: true,
+            todayHighlight: true
+        });
+    });
+
+    // Función para capturar datos del formulario
+    function GetDataFormComponents() {
+        var formData = {};
+        $('input[type="text"]').each(function() {
+            var id = $(this).attr('id');
+            var value = $(this).val();
+            formData[id] = value;
+            console.log("Capturado:", id, value); // Log para verificar captura
+        });
+        console.log("JSON generado:", formData);
+        return formData;
+    }
+
+    // Función para limpiar el formulario
+    function clearForm() {
+        $('input[type="text"]').each(function() {
+            $(this).val(''); // Limpia el valor del input
+        });
+        console.log("Formulario limpiado.");
+    }
+
+    $(document).ready(function() {
+        $('#bttnCrear').click(function() {
+            var jsonData = GetDataFormComponents();
+
+            if (!jsonData.id_Registro) {
+                console.error("El campo ID es requerido pero no se capturó.");
+                alert("Por favor ingresa un ID de registro.");
+                return;
+            }
+
+            var jsonString = JSON.stringify(jsonData);
+            console.log("JSON String para guardar:", jsonString);
+            DbLocalStoreInstance.addRecord(jsonString);
+
+            // Mostrar alerta después de crear
+            alert('Registro creado exitosamente: ' + jsonString);
+
+            clearForm(); // Limpiar el formulario después de crear un registro
+        });
+
+        $('#bttnActualizar').click(function() {
+            UpdateDB();
+        });
+
+        $('#bttnBuscar').click(function() {
+            var idRegistro = $('#id_Registro').val();
+            console.log("Buscando ID:", idRegistro);
+            if (idRegistro) {
+                SearchDB(idRegistro);
+            } else {
+                alert('Por favor ingresa un ID de registro.');
+            }
+        });
+
+        $('#bttnEliminar').click(function() {
+            DeleteDB();
+            clearForm(); // Limpiar el formulario después de eliminar un registro
+        });
+    });
+
+    function SearchDB(idRegistro) {
+        var record = DbLocalStoreInstance.getRecordById(idRegistro);
+
+        if (record) {
+            alert('Registro encontrado: ' + JSON.stringify(record));
+            for (var key in record) {
+                if (record.hasOwnProperty(key) && $('#' + key).length) {
+                    $('#' + key).val(record[key]);
+                    $('#' + key).text(record[key]);
+                }
+            }
+        } else {
+            alert('Registro no encontrado.');
+        }
+    }
+
+    function UpdateDB() {
+        var jsonData = GetDataFormComponents();
+        var idRegistro = jsonData['id_Registro'];
+        if (!idRegistro) {
+            alert('Por favor ingresa un ID de registro.');
+            return;
+        }
+        var jsonString = JSON.stringify(jsonData);
+        console.log("JSON String para actualizar:", jsonString);
+        DbLocalStoreInstance.updateRecord(idRegistro, jsonString);
+
+        // Mostrar alerta después de actualizar
+        alert('Registro actualizado exitosamente: ' + jsonString);
+    }
+
+    function DeleteDB() {
+        var idRegistro = $('#id_Registro').val();
+        if (!idRegistro) {
+            alert('Por favor ingresa un ID de registro.');
+            return;
+        }
+        DbLocalStoreInstance.deleteRecord(idRegistro);
+
+        // Mostrar alerta después de eliminar
+        alert('Registro eliminado exitosamente con ID: ' + idRegistro);
+    }
+</script>
+
+</body>
+</html>

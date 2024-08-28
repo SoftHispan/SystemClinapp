@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard Clínica</title>
+    <style>
+      /* Colores personalizados */
+      :root {
+        --primary-color: #d0ebf5; /* Azul suave */
+        --accent-color: #f5e9d0; /* Blanco tostado */
+        --gray-color: #69717d; /* Gris suave */
+        --text-color: #333333; /* Texto principal en gris oscuro */
+        --sidebar-text-color: #bdcddb; /* Nuevo color de texto para las etiquetas <a> */
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        background-color: var(--accent-color);
+        color: var(--text-color);
+        margin: 0;
+        padding: 0;
+      }
+
+      .header {
+        background-color: var(--primary-color);
+        padding: 20px;
+        text-align: center;
+        font-size: 24px;
+        font-weight: bold;
+        color: var(--text-color);
+      }
+
+      .sidebar {
+        width: 250px;
+        background-color: var(--gray-color);
+        padding: 20px;
+        position: fixed;
+        height: 100%;
+      }
+
+      .sidebar a {
+        display: block;
+        padding: 10px;
+        margin: 10px 0;
+        color: var(
+          --sidebar-text-color
+        ); /* Aplicación del nuevo color de texto */
+        text-decoration: none;
+        border-radius: 5px;
+      }
+
+      .sidebar a:hover {
+        background-color: var(--primary-color);
+        color: #855a49;
+      }
+
+      .content {
+        margin-left: 270px;
+        padding: 20px;
+        background-color: white;
+        min-height: 100vh;
+      }
+
+      .card {
+        background-color: var(--primary-color);
+        padding: 20px;
+        margin: 20px 0;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .card h2 {
+        margin: 0 0 10px 0;
+        color: var(--text-color);
+      }
+
+      .card p {
+        margin: 0;
+        color: var(--text-color);
+      }
+      /* Estilo para mostrar la pantalla en blanco */
+      #loadingScreen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: white;
+        z-index: 9999;
+      }
+    </style>
+    <!-- Rutas dinámicas generadas por Flask para los archivos JavaScript -->
+    <script src="/Static/wwwroot/scr/js/IdentityChecker.js"></script>
+    <script src="/Static/wwwroot/scr/js/UserDbStore.js"></script>
+    <script src="/Static/wwwroot/scr/js/Identity.js"></script></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  </head>
+  <body onload="IgniteDb()">
+   
+  </body>
+  <script>
+    let userDbInstance = null;
+    let identityInstance = null;
+    let identityCheckerInstance = null;
+
+    function IgniteDb() {
+      // Definir las URLs usando Flask dentro de la plantilla
+      var loginUrl = "/templates/Login/indexLGN.html";
+      var dashboardUrl = "/templates/Dashboard/indexDS.html";
+      var policyURL = "/templates/Politicas/index.html";  
+      window.appConfig = {
+        loginUrl: loginUrl,
+        dashboardUrl: dashboardUrl,
+        policyURL: policyURL  
+      };
+      // Imprimir las URLs para verificar
+      console.log("Login URL:", loginUrl);
+      console.log("Dashboard URL:", dashboardUrl);
+      const user = JSON.parse(sessionStorage.getItem("UserNameAuthenticated"));
+
+      // Verificar si el usuario está autenticado
+      if (user && user.Identidad === "true") {
+          if (user.Rol === "User") {
+            alert("No tiene los privilegios necesarios para acceder a esta página.");
+            window.location.href = window.appConfig.policyUR;
+            startIdentityChecker();
+          }
+        // Verificar si el usuario tiene el rol de "Admin"
+        if (user.Rol === "Admin") {
+          // Si el usuario tiene el rol adecuado, ocultar la pantalla de carga y mostrar el contenido
+          document.getElementById("loadingScreen").style.display = "none";
+          document.getElementById("mainContent").style.display = "block";
+
+          // Crear una instancia Singleton y hacerla accesible globalmente
+          userDbInstance = UserDbStore.getInstance("userDbStore");
+
+          // Crear una instancia de Identity usando la instancia de UserDbStore
+          identityInstance = Identity.getInstance(userDbInstance);
+          DbLocalStoreInstance = DbLocalStore.getInstance("dbLocalStore");    
+          // Iniciar IdentityChecker
+          startIdentityChecker();
+        }
+      }else {
+        alert("No está autenticado. Favor de autenticarse, gracias...");
+        window.location.href = window.appConfig.loginUrl;
+      }
+    }
+
+    function startIdentityChecker() {
+      // Crear la instancia Singleton de IdentityChecker
+      identityCheckerInstance = IdentityChecker.getInstance(identityInstance);    
+      identityCheckerInstance.startChecking();
+    }
+  </script>
+</html>

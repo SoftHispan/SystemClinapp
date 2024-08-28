@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabla con Paginación, Eliminación e Inserción</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js"></script>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+        }
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            padding: 20px;
+            max-width: 90%;
+            margin: auto;
+        }
+        #TContain {
+            flex: 1;
+            overflow-y: auto;
+        }
+        table {
+            background-color: #1e1e1e;
+            color: #e0e0e0;
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px;
+            border-radius: 10px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid #333;
+        }
+        th {
+            background-color: #333;
+            border-radius: 10px 10px 0 0;
+        }
+        tr:nth-child(even) {
+            background-color: #2a2a2a;
+            border-radius: 10px;
+        }
+        tr:nth-child(odd) {
+            background-color: #1e1e1e;
+            border-radius: 10px;
+        }
+        .btn {
+            margin: 5px;
+            background-color: #333;
+            color: #e0e0e0;
+            border: 1px solid #444;
+            border-radius: 5px;
+        }
+        .btn:hover {
+            background-color: #555;
+            border: 1px solid #666;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .pagination a {
+            color: #e0e0e0;
+            padding: 8px 16px;
+            text-decoration: none;
+            background-color: #333;
+            margin: 0 5px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        .pagination a.active {
+            background-color: #555;
+        }
+        .pagination a:hover {
+            background-color: #444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button id="btnInsertar" class="btn btn-success">Insertar Registro</button>
+         
+        <div id="TContain">
+            <table id="contenedorTabla">
+                <thead>
+                    <!-- Encabezados de columna de tu tabla -->
+                </thead>
+                <tbody>
+                    <!-- Filas de datos de tu tabla -->
+                </tbody>
+            </table>
+        </div>
+        <div class="pagination" id="pagination-container">
+            <!-- Controles de paginación se generarán aquí -->
+        </div>
+    </div>
+    <script src="/Static/wwwroot/scr/js/DbLocalStore.js"></script>
+    <script>
+
+         
+        let userDbInstance = null;
+        let identityInstance = null;
+        let identityCheckerInstance = null;
+        let DbLocalStoreInstance = null;
+        function IgniteDb() {
+          // Definir las URLs usando Flask dentro de la plantilla
+            // Definir las URLs usando Flask dentro de la plantilla
+              var loginUrl = "/templates/Login/indexLGN.html";
+              var dashboardUrl = "/templates/Dashboard/indexDS.html";
+              var policyURL = "/templates/Politicas/index.html";  
+              window.appConfig = {
+                loginUrl: loginUrl,
+                dashboardUrl: dashboardUrl,
+                policyUR: policyUR
+              };
+          // Imprimir las URLs para verificar
+          console.log("Login URL:", loginUrl);
+          console.log("Dashboard URL:", dashboardUrl);
+          const user = JSON.parse(sessionStorage.getItem("UserNameAuthenticated"));
+
+          // Verificar si el usuario está autenticado
+          if (user && user.Identidad === "true") {
+            // Verificar si el usuario tiene el rol de "Admin"
+            if (user.Rol === "Admin") {
+              // Si el usuario tiene el rol adecuado, ocultar la pantalla de carga y mostrar el contenido
+              document.getElementById("loadingScreen").style.display = "none";
+              document.getElementById("mainContent").style.display = "block";
+
+              // Crear una instancia Singleton y hacerla accesible globalmente
+              userDbInstance = UserDbStore.getInstance("userDbStore");
+
+              // Crear una instancia de Identity usando la instancia de UserDbStore
+              identityInstance = Identity.getInstance(userDbInstance);
+              DbLocalStoreInstance = DbLocalStore.getInstance("dbLocalStore");    
+              // Iniciar IdentityChecker
+              startIdentityChecker();
+            }else {
+              alert("No tiene los privilegios necesarios para acceder a esta página. Cerrando sesión y redirigiendo al Login...");
+
+
+              window.location.href = window.appConfig.loginUrl;
+            }
+          } else {
+            alert("No está autenticado. Favor de autenticarse, gracias...");
+            window.location.href = window.appConfig.loginUrl;
+          }
+        }
+
+        function startIdentityChecker() {
+          // Crear la instancia Singleton de IdentityChecker
+          identityCheckerInstance = IdentityChecker.getInstance(identityInstance);    
+          identityCheckerInstance.startChecking();
+        }
+
+         DbLocalStoreInstance = DbLocalStore.getInstance("dbLocalStore");   
+        $(document).ready(function () {
+            let registros = DbLocalStoreInstance.getRecords();
+            const registrosPorPagina = 6;
+            let paginaActual = 1;
+ 
+                        cargarTablaConPaginacion(registros, registrosPorPagina, paginaActual);
+                        generarControlesPaginacion(registros.length, registrosPorPagina);
+                     
+            function cargarTablaConPaginacion(datosJSON, registrosPorPagina, pagina) {
+                if (!Array.isArray(datosJSON)) {
+        console.error("datosJSON no es un array:", datosJSON);
+        return;
+    }
+                const startIndex = (pagina - 1) * registrosPorPagina;
+                const endIndex = startIndex + registrosPorPagina;
+                const datosPagina = datosJSON.slice(startIndex, endIndex);
+
+                const tabla = crearTablaDesdeJSON(datosPagina);
+                $("#contenedorTabla").empty().append(tabla);
+
+                // Asignar evento a los botones de eliminar
+                $(".btn-eliminar").off("click").on("click", function() {
+                // Obtener la fila más cercana al botón de eliminar
+                const fila = $(this).closest('tr');
+    
+                // Obtener el valor de la celda que contiene el id_Registro (se asume que es la primera celda de la fila)
+                const idRegistro = fila.find('td').eq(0).text().trim();
+    
+                console.log("id_Registro a eliminar:", idRegistro);
+    
+                // Eliminar el registro de la base de datos local (localStorage)
+                DbLocalStoreInstance .deleteRecord(idRegistro);
+
+               // Luego, realizar cualquier otra acción necesaria, como eliminar la fila de la tabla
+               eliminarRegistro(idRegistro);
+               });
+
+            }
+
+            function generarControlesPaginacion(totalRegistros, registrosPorPagina) {
+                const totalPaginas = Math.ceil(totalRegistros / registrosPorPagina);
+                const paginationContainer = $('#pagination-container');
+                paginationContainer.empty();
+
+                for (let i = 1; i <= totalPaginas; i++) {
+                    const pageLink = $('<a href="#" data-page="' + i + '">' + i + '</a>');
+                    if (i === paginaActual) {
+                        pageLink.addClass('active');
+                    }
+                    paginationContainer.append(pageLink);
+                }
+
+                $('#pagination-container a').on('click', function (event) {
+                    event.preventDefault();
+                    paginaActual = parseInt($(this).data('page'));
+                    cargarTablaConPaginacion(registros, registrosPorPagina, paginaActual);
+                    $('#pagination-container a').removeClass('active');
+                    $(this).addClass('active');
+                });
+            }
+
+            function eliminarRegistro(idRegistro) {
+    const index = registros.findIndex(registro => registro.id_Registro == idRegistro);
+    if (index !== -1) {
+        registros.splice(index, 1);
+
+        // Verificar si la página actual tiene registros después de eliminar
+        const totalRegistros = registros.length;
+        const totalPaginas = Math.ceil(totalRegistros / registrosPorPagina);
+
+        // Si la página actual está vacía y no es la primera página, retroceder una página
+        if (paginaActual > totalPaginas) {
+            paginaActual = totalPaginas;
+        }
+
+        cargarTablaConPaginacion(registros, registrosPorPagina, paginaActual);
+        generarControlesPaginacion(totalRegistros, registrosPorPagina);
+    }
+}
+
+
+            $('#btnInsertar').on('click', function() {
+                const nuevoRegistro = {
+                    "id_Registro": (registros.length + 1).toString(),
+                    "datepicker": "08/19/2024",
+                    "Nombre_del_paciente": "Carlos Ivan Cruz Mendoza",
+                    "Procedimiento": "seguimiento de rutina",
+                    "Causa_Externa": "asd",
+                    "Diagnóstico_Principal": "contucion",
+                    "Precio_Consulta": "5000"
+                };
+
+                registros.push(nuevoRegistro);
+                DbLocalStoreInstance.addRecord(nuevoRegistro);
+                cargarTablaConPaginacion(registros, registrosPorPagina, paginaActual);
+                generarControlesPaginacion(registros.length, registrosPorPagina);
+            });
+        });
+
+        function crearTablaDesdeJSON(datosJSON, agregarAccion = true) {
+            const tabla = $("<table></table>");
+            const thead = $("<thead></thead>");
+            const tbody = $("<tbody></tbody>");
+
+            if (!datosJSON.length) {
+                return tabla;
+            }
+
+            const ordenColumnas = Object.keys(datosJSON[0]);
+
+            const encabezado = $("<tr></tr>");
+            ordenColumnas.forEach((columna, indice) => {
+                encabezado.append("<th>" + columna + "</th>");
+            });
+
+            if (agregarAccion) {
+                agregarColumnaAccion(encabezado, tbody, datosJSON, ordenColumnas);
+            } else {
+                datosJSON.forEach(item => {
+                    const fila = $("<tr></tr>");
+                    ordenColumnas.forEach(columna => {
+                        fila.append("<td>" + item[columna] + "</td>");
+                    });
+                    tbody.append(fila);
+                });
+            }
+
+            thead.append(encabezado);
+            tabla.append(thead).append(tbody);
+            return tabla;
+        }
+
+        function agregarColumnaAccion(encabezado, tbody, datosJSON, ordenColumnas) {
+            encabezado.append("<th>Acción</th>");
+
+            datosJSON.forEach(item => {
+                const fila = $("<tr></tr>");
+                ordenColumnas.forEach(columna => {
+                    fila.append("<td>" + item[columna] + "</td>");
+                });
+                agregarBotonEliminar(fila, item.id_Registro);
+                tbody.append(fila);
+            });
+        }
+
+        function agregarBotonEliminar(fila, idRegistro) {
+            const botonEliminar = `<td><button class="btn btn-danger btn-eliminar" data-id="${idRegistro}">Eliminar</button></td>`;
+            fila.append(botonEliminar);
+        }
+    </script>
+</body>
+</html>

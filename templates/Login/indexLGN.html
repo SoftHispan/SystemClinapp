@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inicio de Sesion</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: #f4f6f9;
+        font-family: Arial, sans-serif;
+      }
+
+      .card {
+        border-radius: 8px;
+        border: none;
+      }
+
+      .card-title {
+        font-weight: 600;
+        color: #333;
+      }
+
+      .input-group-text {
+        background-color: #e9ecef;
+        border: none;
+        border-radius: 8px 0 0 8px;
+      }
+
+      .form-control {
+        border-radius: 0 8px 8px 0;
+        border-left: 0;
+      }
+
+      .btn-primary {
+        background-color: #0056b3;
+        border-color: #0056b3;
+        border-radius: 8px;
+        font-weight: 600;
+      }
+
+      .btn-primary:hover {
+        background-color: #004494;
+        border-color: #004494;
+      }
+    </style>
+  </head>
+  <body onload="IgniteDb()">
+    <div
+      class="container d-flex align-items-center justify-content-center vh-100"
+    >
+      <div class="card shadow-lg p-4" style="width: 100%; max-width: 400px">
+        <div class="card-body">
+          <h3 class="card-title text-center mb-4">Clinapp Login</h3>
+          <form id="loginForm">
+            <div class="mb-3">
+              <label for="username" class="form-label">Usuario</label>
+              <div class="input-group">
+                <span class="input-group-text"
+                  ><i class="bi bi-person"></i
+                ></span>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="username"
+                  placeholder="Ingrese Usuario"
+                />
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="password" class="form-label">Contraseña</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                <input
+                  type="password"
+                  class="form-control"
+                  id="password"
+                  placeholder="Ingrese Contraseña"
+                />
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Login</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rutas dinámicas generadas por Flask para los archivos JavaScript -->
+    <script src="/Static/wwwroot/scr/js/IdentityChecker.js"></script>
+    <script src="/Static/wwwroot/scr/js/UserDbStore.js"></script>
+    <script src="/Static/wwwroot/scr/js/Identity.js"></script>
+     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.js"></script>
+    <script>
+      let userDbInstance = null;
+      let identityInstance = null;
+      let identityCheckerInstance = null;
+      function IgniteDb() {
+        // Definir las URLs usando Flask dentro de la plantilla
+        var loginUrl = "/templates/Login/indexLGN.html";
+        var dashboardUrl = "/templates/Dashboard/indexDS.html";
+        window.appConfig = {
+          loginUrl: loginUrl,
+          dashboardUrl: dashboardUrl,
+        };
+        // Imprimir las URLs para verificar
+        console.log("Login URL:", loginUrl);
+        console.log("Dashboard URL:", dashboardUrl);
+        // Crear una instancia Singleton y hacerla accesible globalmente
+        userDbInstance = UserDbStore.getInstance("userDbStore");
+    
+        // Crear una instancia de Identity usando la instancia de UserDbStore
+        identityInstance = Identity.getInstance(userDbInstance);
+     
+
+        const user = JSON.parse(
+          sessionStorage.getItem("UserNameAuthenticated")
+        );
+
+        if (user && user.Identidad === "true") {
+          startIdentityChecker();
+        } else if (window.location.pathname !== loginUrl) {
+          console.error(
+            "Usuario no autenticado o `Identidad` no es 'true'. Redirigiendo al login."
+          );
+          window.location.href = loginUrl;
+        }
+      }
+
+      function startIdentityChecker() {
+        // Crear la instancia Singleton de IdentityChecker
+        identityCheckerInstance = IdentityChecker.getInstance(identityInstance);    
+        identityCheckerInstance.startChecking();
+      }
+
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", async function (event) {
+          event.preventDefault(); // Evita el envío del formulario para manejar la autenticación manualmente
+
+          // Asignar los valores de los campos de texto a las variables globales
+          const username = document.getElementById("username").value;
+          const password = document.getElementById("password").value;
+
+          // Intentar autenticar al usuario
+          const isAuthenticated = await identityInstance.authenticate(
+            username,
+            password
+          );
+
+          if (isAuthenticated) {
+            const user = userDbInstance.getUserByUsername(username);
+            sessionStorage.setItem(
+              "UserNameAuthenticated",
+              JSON.stringify(user)
+            ); // Guardar como JSON
+
+            // Redireccionar a la página de inicio
+            window.location.href = window.appConfig.dashboardUrl;
+          } else {
+            alert(
+              "Usuario o contraseña incorrectos. Por favor, intenta de nuevo."
+            );
+          }
+        });
+
+        
+    </script>
+  </body>
+</html>

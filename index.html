@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Clinapp Dashboard</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: #f4f6f9;
+        font-family: Arial, sans-serif;
+      }
+
+      .navbar {
+        background-color: #0056b3;
+        border-radius: 8px;
+      }
+
+      .navbar-brand,
+      .nav-link {
+        color: white !important;
+        font-weight: 600;
+      }
+
+      .nav-link:hover {
+        color: #f4f6f9 !important;
+      }
+
+      .card {
+        border-radius: 8px;
+        border: none;
+      }
+
+      .card-title {
+        font-weight: 600;
+        color: #333;
+      }
+
+      .btn-primary {
+        background-color: #0056b3;
+        border-color: #0056b3;
+        border-radius: 8px;
+        font-weight: 600;
+      }
+
+      .btn-primary:hover {
+        background-color: #004494;
+        border-color: #004494;
+      }
+
+      .footer {
+        background-color: #0056b3;
+        color: white;
+        padding: 10px 0;
+        border-radius: 8px;
+        text-align: center;
+        position: fixed;
+        width: 100%;
+        bottom: 0;
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  </head>
+<body onload="GlobalRoutes()">
+    <nav class="navbar navbar-expand-lg">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">Clinapp</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="#">Inicio</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Perfil</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Configuración</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Cerrar Sesión</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div
+      class="container d-flex align-items-center justify-content-center vh-100"
+    >
+      <div class="card shadow-lg p-4" style="width: 100%; max-width: 600px">
+        <div class="card-body text-center">
+          <h3 class="card-title mb-4">Bienvenido a Clinapp</h3>
+          <p class="card-text">
+            Este es tu tablero principal. Desde aquí podrás acceder a todas las
+            funcionalidades de la aplicación. Utiliza la barra de navegación
+            para moverte por las diferentes secciones.
+          </p>
+          <a href="/templates/Login/indexLGN.html" id="profileButton" class="btn btn-primary mt-3"
+            >Ir a Inicio de Sesion</a
+          >
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div class="container">
+        <p class="mb-0">Clinapp &copy; 2024</p>
+      </div>
+    </footer>
+
+
+
+    <script>
+      function GlobalRoutes() {
+        // Definir las URLs usando Flask dentro de la plantilla
+        var loginUrl = "/templates/Login/indexLGN.html";
+        var dashboardUrl = "/templates/Dashboard/indexDS.html";
+        window.appConfig = {
+          loginUrl: loginUrl,
+          dashboardUrl: dashboardUrl,
+        };
+        // Imprimir las URLs para verificar
+        console.log("Login URL:", loginUrl);
+        console.log("Dashboard URL:", dashboardUrl);
+      }
+
+      document
+        .getElementById("profileButton")
+        .addEventListener("click", function (event) {
+          event.preventDefault(); // Previene la acción por defecto del enlace
+          alert("Ir a Login de pagina!"); // Acción personalizada
+          window.location.href = window.appConfig.loginUrl;
+        });
+      
+    </script>
+  </body>
+</html>

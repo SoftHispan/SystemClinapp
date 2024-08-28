@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario Modular Dinamico para Web</title>
+    <style>
+        /* Estilos CSS Profesionales con Grid y Flexbox */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #contenedorFormulario {
+            background: #ffffff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-gap: 20px;
+        }
+
+        h1 {
+            grid-column: span 2;
+            text-align: center;
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .grupo-formulario {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .grupo-formulario label {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .grupo-formulario input[type="text"],
+        .grupo-formulario input[type="email"],
+        .grupo-formulario input[type="password"],
+        .grupo-formulario input[type="date"],
+        .grupo-formulario input[type="range"],
+        .grupo-formulario select,
+        .grupo-formulario textarea {
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            width: 100%;
+            transition: border-color 0.3s ease;
+        }
+
+        .grupo-formulario input[type="checkbox"],
+        .grupo-formulario input[type="radio"] {
+            margin-right: 10px;
+            width: auto;
+        }
+
+        .grupo-formulario input[type="submit"],
+        .grupo-formulario input[type="button"] {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            align-self: start;
+            transition: background-color 0.3s ease;
+        }
+
+        .grupo-formulario input[type="submit"]:hover,
+        .grupo-formulario input[type="button"]:hover {
+            background-color: #0056b3;
+        }
+
+        .grupo-formulario input:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        .fila-formulario {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .grupo-formulario.contenedor-rango {
+            grid-column: span 2;
+        }
+
+        .grupo-formulario .etiquetas-rango {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .progreso {
+            width: 100%;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            grid-column: span 2;
+        }
+
+        .barra-progreso {
+            height: 20px;
+            background-color: #007bff;
+            text-align: center;
+            color: white;
+            line-height: 20px;
+            transition: width 0.3s ease;
+        }
+
+        /* Estilos para Accesibilidad */
+        .grupo-formulario label[for]:after {
+            content: " *";
+            color: red;
+            font-size: 18px;
+        }
+    </style>
+    <script>
+        // JSON para el Formulario Modular
+        const jsonData = [
+            {
+                "forms": {
+                    "formularioBibliotecaWeb": {
+                        "Container": {
+                            "id": "contenedorFormulario"
+                        },
+                        "controls": {
+                            "input": [
+                                {
+                                    "id": "nombre",
+                                    "name": "nombre",
+                                    "value": "",
+                                    "placeholder": "Nombre",
+                                    "type": "text",
+                                    "required": true
+                                },
+                                {
+                                    "id": "apellido",
+                                    "name": "apellido",
+                                    "value": "",
+                                    "placeholder": "Apellido",
+                                    "type": "text",
+                                    "required": true
+                                },
+                                {
+                                    "id": "correoElectronico",
+                                    "name": "correoElectronico",
+                                    "value": "",
+                                    "placeholder": "Correo Electrónico",
+                                    "type": "email",
+                                    "required": true
+                                },
+                                {
+                                    "id": "contrasena",
+                                    "name": "contrasena",
+                                    "value": "",
+                                    "placeholder": "Contraseña",
+                                    "type": "password",
+                                    "required": true
+                                },
+                                {
+                                    "id": "fechaNacimiento",
+                                    "name": "fechaNacimiento",
+                                    "value": "",
+                                    "placeholder": "Fecha de Nacimiento",
+                                    "type": "date"
+                                }
+                            ],
+                            "textarea": [
+                                {
+                                    "id": "biografia",
+                                    "name": "biografia",
+                                    "value": "",
+                                    "placeholder": "Escribe una breve biografía",
+                                    "rows": 4
+                                }
+                            ],
+                            "select": [
+                                {
+                                    "id": "rolTrabajo",
+                                    "name": "rolTrabajo",
+                                    "value": "",
+                                    "options": [
+                                        {"value": "", "text": "Seleccionar Rol"},
+                                        {"value": "desarrollador", "text": "Desarrollador"},
+                                        {"value": "disenador", "text": "Diseñador"},
+                                        {"value": "pm", "text": "Project Manager"},
+                                        {"value": "qa", "text": "Tester"}
+                                    ]
+                                }
+                            ],
+                            "checkbox": [
+                                {
+                                    "id": "boletin",
+                                    "name": "boletin",
+                                    "value": "suscribir",
+                                    "label": "Suscribirse al boletín"
+                                },
+                                {
+                                    "id": "terminos",
+                                    "name": "terminos",
+                                    "value": "aceptar",
+                                    "label": "Acepto los términos y condiciones",
+                                    "required": true
+                                }
+                            ],
+                            "radio": [
+                                {
+                                    "id": "generoMasculino",
+                                    "name": "genero",
+                                    "value": "masculino",
+                                    "label": "Masculino"
+                                },
+                                {
+                                    "id": "generoFemenino",
+                                    "name": "genero",
+                                    "value": "femenino",
+                                    "label": "Femenino"
+                                },
+                                {
+                                    "id": "generoOtro",
+                                    "name": "genero",
+                                    "value": "otro",
+                                    "label": "Otro"
+                                }
+                            ],
+                            "button": [
+                                {
+                                    "id": "botonEnviar",
+                                    "name": "enviar",
+                                    "value": "Enviar",
+                                    "type": "button"
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        ];
+
+        // Función para generar el formulario dinámico
+        function generateForm(jsonData, formName, containerId, properties) {
+            const form = jsonData[0].forms[formName];
+
+            if (!form) {
+                console.error(`Formulario ${formName} no encontrado.`);
+                return;
+            }
+
+            const container = document.getElementById(containerId);
+            if (!container) {
+                console.error(`Contenedor con ID ${containerId} no encontrado.`);
+                return;
+            }
+
+            container.innerHTML = ''; // Limpia el contenedor antes de agregar nuevos elementos
+
+            // Barra de progreso
+            const progress = document.createElement('div');
+            progress.className = 'progreso';
+            const progressBar = document.createElement('div');
+            progressBar.className = 'barra-progreso';
+            progressBar.style.width = '0%';
+            progressBar.textContent = '0%';
+            progress.appendChild(progressBar);
+            container.appendChild(progress);
+
+            let totalFields = 0;
+            let completedFields = 0;
+
+            for (let controlType in form.controls) {
+                form.controls[controlType].forEach(control => {
+                    totalFields++;
+                    const formGroup = document.createElement('div');
+                    formGroup.className = 'grupo-formulario';
+
+                    let element;
+                    if (controlType === 'select') {
+                        element = document.createElement('select');
+                        control.options.forEach(optionData => {
+                            const option = document.createElement('option');
+                            option.value = optionData.value;
+                            option.textContent = optionData.text;
+                            element.appendChild(option);
+                        });
+                    } else if (controlType === 'textarea') {
+                        element = document.createElement('textarea');
+                        element.rows = control.rows;
+                    } else if (controlType === 'checkbox' || controlType === 'radio') {
+                        element = document.createElement('input');
+                        element.setAttribute('type', controlType);
+                        element.setAttribute('value', control.value);
+
+                        const label = document.createElement('label');
+                        label.textContent = control.label;
+                        label.prepend(element);
+                        formGroup.appendChild(label);
+                    } else if (controlType === 'button') {
+                        element = document.createElement('input');
+                        element.setAttribute('type', control.type);
+                        element.addEventListener('click', function() {
+                            alert('Formulario enviado');
+                            getValuesComponentsDOM('contenedorFormulario');
+                        });
+                    } else {
+                        element = document.createElement('input');
+                        element.setAttribute('type', control.type);
+                    }
+
+                    // Asignar propiedades a los elementos
+                    properties.forEach(prop => {
+                        if (control[prop]) {
+                            element.setAttribute(prop, control[prop]);
+                        }
+                    });
+
+                    // Actualizar la barra de progreso
+                    element.addEventListener('input', function() {
+                        if (element.value) {
+                            if (!element.dataset.completed) {
+                                completedFields++;
+                                element.dataset.completed = true;
+                            }
+                        } else {
+                            if (element.dataset.completed) {
+                                completedFields--;
+                                element.dataset.completed = false;
+                            }
+                        }
+                        const percentComplete = Math.round((completedFields / totalFields) * 100);
+                        progressBar.style.width = percentComplete + '%';
+                        progressBar.textContent = percentComplete + '%';
+                    });
+
+                    if (controlType !== 'checkbox' && controlType !== 'radio') {
+                        formGroup.appendChild(element);
+                    }
+
+                    container.appendChild(formGroup);
+                });
+            }
+        }
+
+        function getValuesComponentsDOM(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) {
+                console.error(`Contenedor con ID ${containerId} no encontrado.`);
+                return;
+            }
+
+            const formData = {};
+            const inputs = container.querySelectorAll('input, select, textarea');
+
+            inputs.forEach(input => {
+                const name = input.name || input.id;
+                const type = input.type;
+
+                if (type === 'checkbox') {
+                    formData[name] = input.checked;
+                } else if (type === 'radio') {
+                    if (input.checked) {
+                        formData[name] = input.value;
+                    }
+                } else {
+                    formData[name] = input.value;
+                }
+            });
+
+            const jsonResult = JSON.stringify(formData, null, 2);
+            alert(jsonResult);
+        }
+
+        // Generar el formulario al cargar la página
+        document.addEventListener("DOMContentLoaded", function() {
+            generateForm(jsonData, 'formularioBibliotecaWeb', 'contenedorFormulario', 
+            ['id', 'name', 'value', 'placeholder', 'type', 'required']);
+        });
+    </script>
+</head>
+<body>
+    <h1>Formulario Modular para Bibliotecas Web</h1>
+    <!-- Contenedor donde se generará el formulario dinámico -->
+    <div id="contenedorFormulario"></div>
+</body>
+</html>

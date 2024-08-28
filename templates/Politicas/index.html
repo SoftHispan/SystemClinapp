@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Acceso Restringido</title>
+    <style>
+      /* Colores personalizados */
+      :root {
+        --primary-color: #d0ebf5; /* Azul suave */
+        --accent-color: #f5e9d0; /* Blanco tostado */
+        --gray-color: #69717d; /* Gris suave */
+        --text-color: #333333; /* Texto principal en gris oscuro */
+        --sidebar-text-color: #bdcddb; /* Nuevo color de texto para las etiquetas <a> */
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        background-color: var(--accent-color);
+        color: var(--text-color);
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .container {
+        text-align: center;
+        background-color: var(--primary-color);
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .container h1 {
+        font-size: 36px;
+        margin-bottom: 20px;
+      }
+
+      .container p {
+        font-size: 18px;
+        margin-bottom: 20px;
+      }
+
+      .container a {
+        text-decoration: none;
+        color: #ffffff;
+        background-color: var(--gray-color);
+        padding: 10px 20px;
+        border-radius: 5px;
+      }
+
+      .container a:hover {
+        background-color: var(--primary-color);
+        color: #333333;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Acceso Restringido</h1>
+      <p>No tienes los privilegios necesarios para acceder a esta página.</p>
+      <a href="/templates/Dashboard/indexDS.html">Volver al Dashboard</a>
+    </div>
+  </body>
+</html>
